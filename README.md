@@ -44,6 +44,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Menú de pausa** con reanudar, reiniciar, lista de controles y selector de nivel inicial.
 - **Game Over** con opción de reinicio.
 - **Tabla de records local** (top 5, guardada en `localStorage`) con nombre de jugador, mejor combo y líneas máximas.
+- **Selector de skins** (Retro, Neón, Pastel, Pixel art) que cambia la apariencia del tablero al vuelo, sin recargar la página, y recuerda la elección entre sesiones.
 
 ---
 
@@ -181,8 +182,11 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `COLORS`       | Paleta de colores por tipo de pieza      | 7 colores             |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
+| `THEMES`       | Skins disponibles (paleta, fondo, color de rejilla y función de dibujo de bloque por tema) | `retro`, `neon`, `pastel`, `pixel` |
 
 > Si cambias `COLS`, `ROWS` o `BLOCK`, recuerda ajustar también `width` y `height` del `<canvas id="board">` en `index.html` para que coincida (`COLS × BLOCK` × `ROWS × BLOCK`).
+
+El selector `<select id="skin-select">` del panel lateral cambia el tema activo sin recargar: aplica la nueva paleta/fondo/rejilla de inmediato (redibujando a mano si el juego está en pausa o game over) y guarda la elección en `localStorage` bajo la clave `tetris.skin` para restaurarla en la siguiente visita. Para añadir un skin nuevo basta con agregar una entrada a `THEMES` con su propia paleta de 8 colores (índice 0 = `null`), `background`, `grid` y método `drawBlock`.
 
 ---
 
