@@ -48,6 +48,11 @@ const startLevelSelect = document.getElementById('start-level');
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let startLevel = 1; // nivel elegido en el menú de pausa, aplicado en la próxima partida
+let gameStartLevel = 1; // copia de startLevel fijada al iniciar la partida actual; clearLines() no debe leer startLevel en vivo o un cambio en el menú alteraría retroactivamente la partida en curso
+
+function dropIntervalFor(lvl) {
+  return Math.max(100, 1000 - (lvl - 1) * 90);
+}
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -113,8 +118,8 @@ function clearLines() {
   if (cleared) {
     lines += cleared;
     score += (LINE_SCORES[cleared] || 0) * level;
-    level = startLevel + Math.floor(lines / 10);
-    dropInterval = Math.max(100, 1000 - (level - 1) * 90);
+    level = gameStartLevel + Math.floor(lines / 10);
+    dropInterval = dropIntervalFor(level);
     updateHUD();
   }
 }
@@ -238,6 +243,7 @@ function togglePause() {
   paused = !paused;
   if (!paused) {
     pauseOverlay.classList.add('hidden');
+    pauseControls.classList.add('hidden');
     if (document.activeElement) document.activeElement.blur(); // evita que un control con foco (select, botón) capture teclas del juego
     lastTime = performance.now();
     loop(lastTime);
@@ -267,10 +273,11 @@ function init() {
   board = createBoard();
   score = 0;
   lines = 0;
-  level = startLevel;
+  gameStartLevel = startLevel;
+  level = gameStartLevel;
   paused = false;
   gameOver = false;
-  dropInterval = Math.max(100, 1000 - (level - 1) * 90);
+  dropInterval = dropIntervalFor(level);
   dropAccum = 0;
   lastTime = performance.now();
   next = randomPiece();
@@ -278,6 +285,7 @@ function init() {
   updateHUD();
   overlay.classList.add('hidden');
   pauseOverlay.classList.add('hidden');
+  pauseControls.classList.add('hidden');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
@@ -307,7 +315,10 @@ document.addEventListener('keydown', e => {
   updateHUD();
 });
 
-restartBtn.addEventListener('click', init);
+restartBtn.addEventListener('click', () => {
+  init();
+  restartBtn.blur();
+});
 
 resumeBtn.addEventListener('click', () => {
   togglePause();
