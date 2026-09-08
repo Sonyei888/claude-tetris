@@ -43,6 +43,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Menú de pausa** con reanudar, reiniciar, lista de controles y selector de nivel inicial.
 - **Game Over** con opción de reinicio.
+- **Tabla de records local** (top 5, guardada en `localStorage`) con nombre de jugador, mejor combo y líneas máximas.
 
 ---
 
@@ -99,7 +100,8 @@ Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
 - Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
-- Un overlay para **GAME OVER** (`#overlay`) y otro independiente para el **menú de pausa** (`#pause-overlay`), con botones de reanudar, reiniciar, ver controles y un `<select>` para elegir el nivel inicial de la próxima partida.
+- Un overlay para **GAME OVER** (`#overlay`), con la tabla de records y el formulario para guardar el nombre si la puntuación entra en el top 5, y otro independiente para el **menú de pausa** (`#pause-overlay`), con botones de reanudar, reiniciar, ver controles y un `<select>` para elegir el nivel inicial de la próxima partida.
+- Una pantalla de inicio (`#start-overlay`) visible al cargar la página, con el top 5 y el botón **Jugar** que arranca la partida.
 
 ### 2. `style.css`
 
@@ -119,6 +121,7 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Nivel y velocidad**: el nivel se calcula como `startLevel + Math.floor(lines / 10)`, donde `startLevel` es el nivel inicial elegido en el menú de pausa (1 por defecto); la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
 - **Menú de pausa** (`togglePause`, `Escape`/`P`): muestra `#pause-overlay` y cancela el bucle de juego; mientras está abierto, el handler de `keydown` ignora el resto de teclas (`if (paused || gameOver) return;`) para no mover la pieza por accidente. Incluye reanudar, reiniciar sin recargar la página, un desplegable con la lista de controles y un `<select id="start-level">` (niveles 1–15) que fija el nivel con el que empezará la próxima partida.
+- **Tabla de records** (`loadHighscores`/`saveHighscores`): guarda hasta 5 entradas `{ name, score, lines, combo }` en `localStorage` bajo la clave `tetris.highscores`, ordenadas por puntuación. Toda lectura/escritura va envuelta en `try/catch` (modo privado, `file://` o datos corruptos se tratan como lista vacía). El nombre introducido por el jugador se renderiza siempre con `textContent` (nunca `innerHTML`) para evitar inyección de HTML.
 
 ### Flujo del juego
 
