@@ -86,6 +86,17 @@ body {
   gap: 4px;
 }
 
+#skin-select {
+  background: #22223a;
+  border: 1px solid #3a3a5a;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 12px;
+  padding: 6px 8px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
 kbd {
   background: #22223a;
   border: 1px solid #3a3a5a;
