@@ -48,8 +48,44 @@ const pauseRestartBtn = document.getElementById('pause-restart-btn');
 const showControlsBtn = document.getElementById('show-controls-btn');
 const backBtn = document.getElementById('back-btn');
 const startLevelSelect = document.getElementById('start-level');
+const recordsListEl = document.getElementById('records-list');
+const resetRecordsBtn = document.getElementById('reset-records-btn');
+const nameEntry = document.getElementById('name-entry');
+const playerNameInput = document.getElementById('player-name');
+const saveRecordBtn = document.getElementById('save-record-btn');
+
+const RECORDS_KEY = 'tetris-records';
+const MAX_RECORDS = 5;
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId, startLevel;
+let combo, maxCombo;
+
+function loadRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(RECORDS_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecords(records) {
+  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+}
+
+function qualifiesForRecords(records, s) {
+  return records.length < MAX_RECORDS || s > records[records.length - 1].score;
+}
+
+function renderRecords(highlightIndex = -1) {
+  const records = loadRecords();
+  recordsListEl.innerHTML = '';
+  records.forEach((rec, i) => {
+    const li = document.createElement('li');
+    li.textContent = `${rec.name} — ${rec.score.toLocaleString()} (L${rec.lines} · C${rec.combo})`;
+    if (i === highlightIndex) li.classList.add('current');
+    recordsListEl.appendChild(li);
+  });
+}
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -117,7 +153,11 @@ function clearLines() {
     score += (LINE_SCORES[cleared] || 0) * level;
     level = Math.floor(lines / 10) + 1;
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
+    combo++;
+    maxCombo = Math.max(maxCombo, combo);
     updateHUD();
+  } else {
+    combo = 0;
   }
 }
 
@@ -233,8 +273,30 @@ function endGame() {
   gameoverBox.classList.remove('hidden');
   pauseBox.classList.add('hidden');
   overlayTitle.textContent = 'GAME OVER';
-  overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
+  overlayScore.textContent = `Puntuación: ${score.toLocaleString()} · Líneas: ${lines} · Mejor combo: ${maxCombo}`;
   overlay.classList.remove('hidden');
+
+  const records = loadRecords();
+  if (qualifiesForRecords(records, score)) {
+    nameEntry.classList.remove('hidden');
+    playerNameInput.value = '';
+    playerNameInput.focus();
+  } else {
+    nameEntry.classList.add('hidden');
+    renderRecords();
+  }
+}
+
+function saveRecord() {
+  const name = playerNameInput.value.trim().slice(0, 10) || 'AAA';
+  const records = loadRecords();
+  records.push({ name, score, lines, combo: maxCombo });
+  records.sort((a, b) => b.score - a.score);
+  records.length = Math.min(records.length, MAX_RECORDS);
+  saveRecords(records);
+  const highlightIndex = records.findIndex(r => r.name === name && r.score === score && r.combo === maxCombo);
+  renderRecords(highlightIndex);
+  nameEntry.classList.add('hidden');
 }
 
 function togglePause() {
@@ -279,13 +341,17 @@ function init() {
   paused = false;
   gameOver = false;
   dropAccum = 0;
+  combo = 0;
+  maxCombo = 0;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
   updateHUD();
   overlay.classList.add('hidden');
+  nameEntry.classList.add('hidden');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
+  renderRecords();
 }
 
 document.addEventListener('keydown', e => {
@@ -326,6 +392,16 @@ backBtn.addEventListener('click', () => {
 });
 startLevelSelect.addEventListener('change', () => {
   startLevel = Number(startLevelSelect.value);
+});
+saveRecordBtn.addEventListener('click', saveRecord);
+playerNameInput.addEventListener('keydown', e => {
+  if (e.code === 'Enter') saveRecord();
+});
+resetRecordsBtn.addEventListener('click', () => {
+  if (confirm('¿Resetear todos los récords?')) {
+    localStorage.removeItem(RECORDS_KEY);
+    renderRecords();
+  }
 });
 
 startLevel = Number(startLevelSelect.value);

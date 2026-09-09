@@ -96,6 +96,69 @@ kbd {
   color: #aaa;
 }
 
+/* ---- Récords ---- */
+.records-section ol {
+  list-style: decimal inside;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.records-section li {
+  font-size: 11px;
+  color: #888;
+}
+
+.records-section li.current {
+  color: #7aa2f7;
+  font-weight: 700;
+}
+
+#reset-records-btn {
+  margin-top: 4px;
+  background: transparent;
+  color: #555570;
+  border: 1px solid #2a2a3a;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+#reset-records-btn:hover {
+  color: #888;
+  border-color: #3a3a5a;
+}
+
+#name-entry {
+  display: flex;
+  gap: 8px;
+}
+
+#player-name {
+  background: #1a1a25;
+  border: 1px solid #3a3a5a;
+  border-radius: 4px;
+  color: #e0e0e0;
+  padding: 6px 8px;
+  font-size: 13px;
+  width: 120px;
+}
+
+#save-record-btn {
+  background: #7aa2f7;
+  color: #0f0f17;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.overlay-box #name-entry.hidden {
+  display: none;
+}
+
 /* ---- Overlay ---- */
 .overlay {
   position: absolute;
